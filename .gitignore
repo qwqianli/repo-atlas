@@ -1,0 +1,38 @@
+# ---- 分析产物 ----
+# P1 起会把别人的仓库 clone 到 backend/data/clones/，SQLite 文件也在 backend/data/。
+# 这两类东西绝对不进版本库：体积大、且不属于本项目源码。
+backend/data/
+
+# ---- 密钥 / 本地私密配置 ----
+# .env 里放的是 API Key，绝对不能进版本库。提交前用 `git status` 确认它没被 add。
+.env
+.env.*
+!.env.example
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+allure-results/
+
+# ---- Node / 前端 ----
+node_modules/
+dist/
+*.local
+
+# ---- 工具与编辑器 ----
+# ZCode 的本地配置（含模型选择等个人设置，不该跟着仓库走）
+.zcode/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.log
