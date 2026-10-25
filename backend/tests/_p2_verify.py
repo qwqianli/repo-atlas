@@ -1,4 +1,8 @@
-"""P2 验收：用真实浏览器点一遍，截图存盘。"""
+"""P2 验收：用真实浏览器点一遍，截图存盘。
+
+运行依赖 playwright（它是验收工具，不是项目依赖，所以不进 requirements.txt）：
+    pip install playwright && playwright install chromium
+"""
 import sys
 from pathlib import Path
 

@@ -1,8 +1,11 @@
-"""三个 HTTP 接口。路由层只做参数校验和转发，异常统一抛 BusinessError。"""
+"""HTTP 接口。路由层只做参数校验和转发，异常统一抛 BusinessError。"""
 
+import json
+import queue
+import time
 from pathlib import Path
 
-from flask import Blueprint, request
+from flask import Blueprint, Response, request, stream_with_context
 
 import config
 from responses import BusinessError, ok, ERROR_NEED_KEY, ERROR_REPO_INVALID
@@ -33,6 +36,57 @@ def start_analyze():
 @api_bp.get("/tasks/<task_id>")
 def get_task(task_id: str):
     return ok(store.get(task_id))
+
+
+@api_bp.get("/tasks/<task_id>/stream")
+def stream_task(task_id: str):
+    """SSE 进度流：浏览器用 EventSource，命令行用 curl -N 验证。"""
+    q = store.subscribe(task_id)   # 任务不存在在这里就抛 1003，不会挂成一条死流
+
+    def gen():
+        try:
+            # 连上先推快照：刷新页面立刻能看到当前状态，不用干等下一个事件
+            task = store.get(task_id)
+            yield _format_event({
+                "type": "snapshot",
+                "status": task["status"],
+                "progress": task["progress"],
+            })
+            if task["status"] in ("done", "failed"):
+                event = {"type": task["status"]}
+                if task["status"] == "failed":
+                    event["error"] = task["error"]
+                yield _format_event(event)
+                return   # 已结束的任务推完就走，生成器绝不能挂着占线程
+            last_emit = time.monotonic()
+            while True:
+                try:
+                    # 必须带超时：任务异常结束后没有新事件，无超时阻塞会让生成器永久挂住
+                    event = q.get(timeout=1)
+                except queue.Empty:
+                    # 超过 15 秒没事件就发心跳注释行：浏览器忽略它，但代理不会掐断空闲连接
+                    if time.monotonic() - last_emit >= 15:
+                        yield ": keepalive\n\n"
+                        last_emit = time.monotonic()
+                    continue
+                yield _format_event(event)
+                last_emit = time.monotonic()
+                if event.get("type") in ("done", "failed"):
+                    return
+        finally:
+            store.unsubscribe(task_id, q)   # 不注销的话订阅者列表只增不减
+
+    response = Response(stream_with_context(gen()), mimetype="text/event-stream")
+    # X-Accel-Buffering 关掉 Nginx 类代理的响应缓冲，否则进度会攒到最后一次性吐出
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["X-Accel-Buffering"] = "no"
+    response.headers["Connection"] = "keep-alive"
+    return response
+
+
+def _format_event(payload: dict) -> str:
+    # SSE 一条消息以两个换行结尾；少一个浏览器不触发 onmessage，页面看着连上了但永远没数据
+    return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
 
 
 @api_bp.get("/repos")

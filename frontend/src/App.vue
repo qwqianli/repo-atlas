@@ -8,7 +8,9 @@
       <router-link to="/" class="brand">repo-atlas · 项目导读器</router-link>
     </header>
     <main class="app-main">
-      <router-view />
+      <!-- key 绑 fullPath：同一个路由组件在不同 task_id 之间切换时强制重建，
+           让 useTaskStream / useAnalysis 这类 composable 干净地重新初始化 -->
+      <router-view :key="$route.fullPath" />
     </main>
   </div>
 </template>

@@ -267,3 +267,100 @@ h1 {
   font-size: 12px;
   font-family: Consolas, monospace;
 }
+
+.chip.clickable {
+  cursor: pointer;
+}
+
+/* ---------- 进度条 ---------- */
+.progress-block {
+  margin: 10px 0;
+}
+
+.progress-bar {
+  height: 10px;
+  background: #d0d7de;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.progress-bar .fill {
+  height: 100%;
+  background: #0969da;
+  border-radius: 5px;
+  transition: width 0.3s;
+}
+
+/* ---------- 阅读路线（结果页底部，占满整宽） ---------- */
+.reading-path {
+  margin-top: 12px;
+  background: #fff;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  padding: 14px;
+}
+
+.rp-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+}
+
+.rp-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.rp-list li:hover {
+  background: #f3f4f6;
+}
+
+.rp-idx {
+  min-width: 26px;
+  text-align: right;
+  color: #57606a;
+  font-family: Consolas, monospace;
+}
+
+.rp-path {
+  font-family: Consolas, monospace;
+  font-size: 13px;
+}
+
+.rp-role {
+  color: #57606a;
+  font-size: 13px;
+}
+
+.rp-role.missing {
+  color: #8c959f;
+  background: #f6f8fa;
+  border-radius: 4px;
+  padding: 0 6px;
+}
+
+.cycles {
+  margin-top: 16px;
+  border-top: 1px dashed #d0d7de;
+  padding-top: 10px;
+}
+
+.cycles h4 {
+  margin: 0 0 4px;
+  color: #9a6700;
+}
+
+.cycle-group {
+  margin: 6px 0;
+}
+
+/* ---------- 404 ---------- */
+.not-found {
+  max-width: 480px;
+  margin: 60px auto;
+  text-align: center;
+}

@@ -37,6 +37,16 @@ export function useAnalysis() {
     timer = setInterval(() => tick(taskId), 1000)
   }
 
+  // 单次拉取任务快照：SSE 收到 done 事件后用它取结果（done 事件本身不带 analysis）
+  async function refresh(taskId) {
+    try {
+      task.value = await request(`/api/tasks/${taskId}`)
+      error.value = ''
+    } catch (e) {
+      error.value = e.message
+    }
+  }
+
   // 提交新任务并开始轮询，返回 task_id（失败返回 null）
   async function submit(repo, withAI = true) {
     loading.value = true
