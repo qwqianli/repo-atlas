@@ -10,12 +10,14 @@ import sys
 from pathlib import Path
 
 from analyzer.ast_parser import build_graph, extract_imports, resolve_raw_imports
+from analyzer.llm_client import LLMError
 from analyzer.repo_loader import (
     build_module_index,
     clone_or_locate,
     iter_python_files,
     module_of,
 )
+from analyzer.summarizer import summarize_files
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +64,11 @@ def render_text(analysis: dict) -> str:
         f"仓库: {Path(analysis['root']).name}",
         _summary_line(analysis),
         f"跳过: {len(analysis['skipped'])} 个",
+    ]
+    # 只有 --with-ai 的结果里才有 ai_stats；不加开关时输出和 P0 一字不差
+    if "ai_stats" in analysis:
+        lines.append(_ai_stats_line(analysis["ai_stats"]))
+    lines += [
         "",
         "文件清单",
     ]
@@ -80,6 +87,14 @@ def _summary_line(analysis: dict) -> str:
     )
 
 
+def _ai_stats_line(stats: dict) -> str:
+    seconds = stats["elapsed_ms"] / 1000
+    return (
+        f"AI 摘要: 命中 {stats['hit']} / 未命中 {stats['miss']} / 失败 {stats['failed']} | "
+        f"tokens {stats['tokens_in']}→{stats['tokens_out']} | 用时 {seconds:.1f}s"
+    )
+
+
 def _render_tree(file_entries: list[dict]) -> list[str]:
     """按目录层级画树，右侧标注每个文件的 internal/external 依赖。"""
     # 嵌套 dict 当树用：值是 dict 表示目录，None 表示文件
@@ -91,16 +106,18 @@ def _render_tree(file_entries: list[dict]) -> list[str]:
             node = node.setdefault(part, {})
         node[parts[-1]] = None
     info = {entry["path"]: entry for entry in file_entries}
-    rows: list[tuple[str, str]] = []
+    rows: list[tuple[str, str, str, dict | None]] = []
     _walk_tree(root, "", [], rows, info)
     # ← 统一对齐到最长的一行，眼睛扫一列就能比
-    width = max((len(display) for display, _ in rows), default=0)
+    width = max((len(display) for display, _, _, _ in rows), default=0)
     lines = []
-    for display, annotation in rows:
+    for display, annotation, prefix, entry in rows:
         if annotation:
             lines.append(f"{display:<{width}}  {annotation}")
         else:
             lines.append(display)
+        if entry is not None and entry.get("summary"):
+            lines.extend(_summary_lines(entry, prefix, width))
     return lines
 
 
@@ -108,7 +125,7 @@ def _walk_tree(
     node: dict,
     prefix: str,
     parts: list[str],
-    rows: list[tuple[str, str]],
+    rows: list[tuple[str, str, str, dict | None]],
     info: dict[str, dict],
 ) -> None:
     """递归画一层。目录和文件混在一起按名字排序，找东西最快。"""
@@ -118,12 +135,18 @@ def _walk_tree(
         connector = "└── " if last else "├── "
         child = node[name]
         if isinstance(child, dict):
-            rows.append((f"{prefix}{connector}{name}/", ""))
+            rows.append((f"{prefix}{connector}{name}/", "", prefix, None))
             # 兄弟里排最后的，下一层前缀用空格收尾，其余继续画竖线
             _walk_tree(child, prefix + ("    " if last else "│   "), parts + [name], rows, info)
         else:
             path = "/".join(parts + [name])
-            rows.append((f"{prefix}{connector}{name}", _annotation(info[path])))
+            rows.append((f"{prefix}{connector}{name}", _annotation(info[path]), prefix, info[path]))
+
+
+def _summary_lines(entry: dict, prefix: str, width: int) -> list[str]:
+    """AI 摘要两行，缩进到与右侧标注同一列；保留树的前缀，长列表里不至于认错父节点。"""
+    indent = prefix + " " * max(0, width + 4 - len(prefix))
+    return [f"{indent}{entry['role']}", f"{indent}{entry['summary']}"]
 
 
 def _annotation(entry: dict) -> str:
@@ -153,11 +176,20 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("repo", help="本地仓库路径，或 http(s)/git@ 开头的 git 地址")
     parser.add_argument("--json", action="store_true", help="输出契约 JSON 而不是渲染文本")
+    parser.add_argument("--with-ai", action="store_true",
+                        help="调用 GLM 给每个模块生成说明（结果进 SQLite 缓存，第二次跑零消耗）")
     args = parser.parse_args(argv)
     try:
         analysis = analyze(args.repo)
+        if args.with_ai:
+            # 原地补 role/summary/key_entities/cached 和 ai_stats/ai_errors
+            summarize_files(analysis, Path(analysis["root"]))
     except ValueError as exc:
         # clone_or_locate 抛的都是"地址给错了"这类可预期错误，打印一句而不是甩 traceback
+        print(f"错误: {exc}", file=sys.stderr)
+        return 2
+    except LLMError as exc:
+        # Key 无效这类"换文件也一样"的错：整体退出，而不是把全部文件挨个记成失败
         print(f"错误: {exc}", file=sys.stderr)
         return 2
     if args.json:

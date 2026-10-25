@@ -1,0 +1,269 @@
+/* 全局样式：不引 UI 库，几十行自己写完 */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  color: #24292f;
+  background: #f6f8fa;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  background: #24292f;
+  padding: 10px 20px;
+}
+
+.app-header .brand {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.app-main {
+  flex: 1;
+  padding: 20px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 26px;
+}
+
+.hint {
+  color: #57606a;
+}
+
+.error {
+  color: #cf222e;
+  background: #ffebe9;
+  border: 1px solid rgba(255, 129, 130, 0.4);
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+/* ---------- 首页 ---------- */
+.home {
+  max-width: 680px;
+  margin: 32px auto;
+}
+
+.repo-input {
+  display: flex;
+  gap: 10px;
+  margin: 16px 0;
+  align-items: center;
+}
+
+.repo-input .repo-path {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.ai-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #57606a;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.repo-input button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #1f883d;
+  color: #fff;
+  cursor: pointer;
+}
+
+.repo-input button:disabled {
+  background: #8c959f;
+  cursor: not-allowed;
+}
+
+.history ul {
+  list-style: none;
+  padding: 0;
+}
+
+.history li {
+  padding: 8px 12px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.history .meta {
+  color: #57606a;
+  font-size: 13px;
+}
+
+/* ---------- 结果页 ---------- */
+.task-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.task-head h2 {
+  margin: 0;
+}
+
+.status {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #ddf4ff;
+  color: #0969da;
+}
+
+.status.done {
+  background: #dafbe1;
+  color: #1a7f37;
+}
+
+.status.failed {
+  background: #ffebe9;
+  color: #cf222e;
+}
+
+.progress-line {
+  color: #0969da;
+}
+
+.stats-bar {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  background: #fff;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  padding: 8px 14px;
+  margin: 10px 0;
+  font-size: 14px;
+  color: #57606a;
+}
+
+.stats-bar b {
+  color: #24292f;
+}
+
+/* 三栏工作区：左树、中图、右详情 */
+.workspace {
+  display: grid;
+  grid-template-columns: 280px 1fr 320px;
+  gap: 10px;
+  height: 72vh;
+  min-height: 480px;
+}
+
+.file-tree {
+  background: #fff;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  overflow: auto;
+  padding: 6px;
+  font-family: Consolas, monospace;
+  font-size: 13px;
+}
+
+.tree-row {
+  padding: 2px 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.tree-row:hover {
+  background: #f3f4f6;
+}
+
+.tree-row.file.active {
+  background: #ddf4ff;
+}
+
+.tree-row.dir {
+  color: #57606a;
+  font-weight: 600;
+}
+
+.arrow {
+  display: inline-block;
+  width: 14px;
+  color: #8c959f;
+}
+
+.graph-panel {
+  background: #fff;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.graph-panel .graph-container {
+  position: absolute;
+  inset: 0;
+}
+
+.module-detail {
+  background: #fff;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  padding: 14px;
+  overflow: auto;
+}
+
+.module-detail .path {
+  font-family: Consolas, monospace;
+  font-size: 14px;
+  margin: 0 0 6px;
+  word-break: break-all;
+}
+
+.module-detail dt {
+  color: #57606a;
+  font-size: 12px;
+  margin-top: 12px;
+}
+
+.module-detail dd {
+  margin: 2px 0 0;
+  font-size: 14px;
+}
+
+.module-detail .mono {
+  font-family: Consolas, monospace;
+  font-size: 13px;
+}
+
+.chip {
+  display: inline-block;
+  background: #ddf4ff;
+  color: #0969da;
+  border-radius: 10px;
+  padding: 1px 8px;
+  margin: 2px 4px 2px 0;
+  font-size: 12px;
+  font-family: Consolas, monospace;
+}
