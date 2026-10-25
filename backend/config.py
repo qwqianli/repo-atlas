@@ -1,8 +1,8 @@
-"""P1 配置：优先读环境变量，没有再读项目根 .env，最后用内置缺省值。
+"""配置：优先读环境变量，没有再读项目根 .env，最后用内置缺省值。
 
 两条铁律：
 1. API Key 绝不写进代码（安全红线），也不在 import 时校验——
-   不带 --with-ai 的老用法（P0 契约）必须照常能跑，校验推迟到真正发请求那一刻；
+   不带 --with-ai 的老用法必须照常能跑，校验推迟到真正发请求那一刻；
 2. 每个值都留环境变量入口，CI 或临时换模型不用改任何文件。
 """
 
@@ -32,7 +32,9 @@ _DOTENV = _load_dotenv(_ENV_FILE)
 
 
 def _from_env(name: str, default: str = "") -> str:
-    return os.environ.get(name) or _DOTENV.get(name) or default
+    # 三条来源统一 strip：cmd 的 set X=v2 尾随空格、.env 的手滑空格都会进值，
+    # 污染缓存键后那批记录永远命中不到，而且完全静默
+    return (os.environ.get(name) or _DOTENV.get(name) or default).strip()
 
 
 def _from_env_int(name: str, default: int) -> int:

@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import FileTreeNode from './FileTreeNode.vue'
 
 const props = defineProps({
-  files: Array,      // P0 的 files 数组（path 是 a/b.py 形式）
+  files: Array,      // files 数组（path 是 a/b.py 形式）
   selected: String,  // 当前选中的文件 path
 })
 const emit = defineEmits(['select'])

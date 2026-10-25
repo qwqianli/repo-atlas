@@ -1,6 +1,6 @@
 """从依赖边计算「建议阅读顺序」：底层模块最先读，循环依赖单独成组。
 
-纯函数模块：不读文件、不碰 Flask、不打印——P4 可以直接对它写单元测试。
+纯函数模块：不读文件、不碰 Flask、不打印——可以直接对它写单元测试。
 
 为什么这样做：
 - 边的含义是 source import target，被 import 的 target 更"底层"、应该先读。
@@ -15,7 +15,7 @@ import heapq
 
 
 def build_reading_path(files: list[dict], edges: list[dict]) -> dict:
-    """从依赖边算出阅读顺序。files / edges 是 P0 analysis 里的两个字段。"""
+    """从依赖边算出阅读顺序。files / edges 是 analysis 里的两个字段。"""
     # 节点全集取自 files 而不是 edges：没有任何依赖边的孤立文件也必须出现在路线里
     paths = sorted(f["path"] for f in files)
     imports: dict[str, list[str]] = {p: [] for p in paths}
@@ -23,7 +23,7 @@ def build_reading_path(files: list[dict], edges: list[dict]) -> dict:
     for edge in edges:
         source, target = edge["source"], edge["target"]
         if source == target:
-            self_loops.add(source)   # P0 正常输出已去自环，纯函数这里兜底
+            self_loops.add(source)   # 正常输出已去自环，纯函数这里兜底
             continue
         imports[source].append(target)
 

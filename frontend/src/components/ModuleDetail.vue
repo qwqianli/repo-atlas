@@ -1,6 +1,6 @@
 <script setup>
 defineProps({
-  file: Object,   // P1 files[] 里的一项；没选中时为 null
+  file: Object,   // files[] 里的一项；没选中时为 null
 })
 </script>
 

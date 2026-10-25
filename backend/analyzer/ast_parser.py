@@ -150,9 +150,9 @@ def build_graph(analysis: dict) -> dict:
         for module in entry["internal"]:
             target = module_to_path.get(module)
             if target is None:
-                continue  # 指向被跳过的坏文件就没有边可画，P3 画图时它会自然缺席
+                continue  # 指向被跳过的坏文件就没有边可画，前端画图时它会自然缺席
             if target == entry["path"]:
-                continue  # 自环去掉；A→B→A 的环按任务书要求保留
+                continue  # 自环去掉；A→B→A 的环保留
             seen.add((entry["path"], target))
     analysis["edges"] = [
         {"source": source, "target": target} for source, target in sorted(seen)

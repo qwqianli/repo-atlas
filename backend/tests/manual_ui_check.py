@@ -1,16 +1,27 @@
-"""P2 验收：用真实浏览器点一遍，截图存盘。
+"""用真实浏览器手动点一遍页面，截图存盘。
 
-运行依赖 playwright（它是验收工具，不是项目依赖，所以不进 requirements.txt）：
+这是开发期的辅助脚本，不是自动化测试（不会被 pytest 收集）。
+
+用法：
     pip install playwright && playwright install chromium
+    python tests/manual_ui_check.py <要分析的仓库路径>
+    例：python tests/manual_ui_check.py ~/repos/qa-lab
+
+前提：后端（5000）与前端（5173）已经起好。
 """
 import sys
+import tempfile
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
-OUT = Path(r"C:/Users/Administrator/AppData/Local/Temp/p2shots")
+if len(sys.argv) < 2:
+    raise SystemExit("用法：python tests/manual_ui_check.py <要分析的仓库路径>")
+
+# expanduser 让 ~ 在 Windows / macOS / Linux 上都能展开（直接写 r"~/xxx" 在 Windows 上不展开）
+REPO = str(Path(sys.argv[1]).expanduser().resolve())
+OUT = Path(tempfile.gettempdir()) / "ui_shots"
 OUT.mkdir(parents=True, exist_ok=True)
-REPO = r"C:/Users/Administrator/WorkBuddy/2026-10-24-13-14-04/qa-lab"
 
 errors = []
 with sync_playwright() as p:

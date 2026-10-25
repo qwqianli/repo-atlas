@@ -173,7 +173,7 @@ h1 {
   grid-template-columns: 280px 1fr 320px;
   gap: 10px;
   height: 72vh;
-  min-height: 480px;
+  min-height: 600px;
 }
 
 .file-tree {
@@ -341,6 +341,17 @@ h1 {
   background: #f6f8fa;
   border-radius: 4px;
   padding: 0 6px;
+}
+
+/* 环成员标记：列表里全量保留文件，只用标签区分，不另列一遍 */
+.rp-tag {
+  color: #9a6700;
+  background: #fff8c5;
+  border: 1px solid #d4a72c66;
+  border-radius: 4px;
+  padding: 0 6px;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .cycles {

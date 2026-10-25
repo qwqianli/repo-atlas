@@ -124,8 +124,11 @@ class TaskStore:
         task["status"] = "running"
         task_id = task["task_id"]
         try:
-            # 复用 P0/P1 的总入口，Web 层绝不重写分析逻辑
+            # 复用分析层的总入口，Web 层绝不重写分析逻辑
             analysis = analyze(task["repo"])
+            # 文件数在解析完就确定了：先把 total 填上，
+            # 页面一进来显示的就是「0 / N」而不是「0 / ?」
+            task["progress"] = {"done": 0, "total": len(analysis["files"])}
             if task["with_ai"]:
                 summarize_files(
                     analysis, Path(analysis["root"]),

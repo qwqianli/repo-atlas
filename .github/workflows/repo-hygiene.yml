@@ -1,0 +1,31 @@
+name: repo-hygiene
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 本地底稿目录不得进入版本库
+        run: |
+          set -euo pipefail
+          bad=$(git ls-files | grep -E '^(docs/dev/|internal/)' || true)
+          if [ -n "$bad" ]; then
+            echo "::error::以下路径不应被跟踪，请移到版本库之外"
+            echo "$bad"
+            exit 1
+          fi
+          echo "OK: 无本地底稿目录"
+
+      - name: 不得出现明文密钥
+        run: |
+          set -euo pipefail
+          if git grep -nEI 'sk-[A-Za-z0-9]{16,}|ghp_[A-Za-z0-9]{16,}|github_pat_[A-Za-z0-9_]{20,}|(ZHIPU|GLM|OPENAI|ANTHROPIC|DEEPSEEK)_API_KEY=[A-Za-z0-9._-]{8,}' -- . ':(exclude).github/' ; then
+            echo "::error::检测到疑似明文密钥"
+            exit 1
+          fi
+          echo "OK: 无明文密钥"

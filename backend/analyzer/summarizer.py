@@ -20,8 +20,8 @@ logger = logging.getLogger(__name__)
 def summarize_files(analysis: dict, root: Path, on_progress: Callable[[int, int, str], None] | None = None) -> dict:
     """原地给每个文件补 role/summary/key_entities/cached，并写入 ai_stats / ai_errors。
 
-    on_progress(done, total, path) 是给 P3 的 SSE 进度推送预留的回调，
-    P1 没有调用方也必须留着——现在不留，P3 就得回头改这里的签名。
+    on_progress(done, total, path) 是给 Web 层 SSE 进度推送预留的回调，
+    目前没有调用方也必须留着——现在不留，接进度推送时就得回头改这里的签名。
     """
     try:
         config.require_api_key()
@@ -71,7 +71,7 @@ def _run_requests(tasks: list[tuple[dict, str, str, str]], store: SummaryStore,
                   stats: dict, errors: list[dict],
                   on_progress: Callable[[int, int, str], None] | None) -> None:
     """第二阶段：线程池只包 llm_client.chat；解析、落库、统计都在主线程做。"""
-    done = stats["hit"]   # 缓存命中的部分第一阶段就完成了
+    done = stats["hit"]   # 缓存命中的部分上次就完成了
     total = stats["hit"] + len(tasks)
     with ThreadPoolExecutor(max_workers=config.LLM_MAX_WORKERS) as pool:
         future_map = {
@@ -123,7 +123,7 @@ def _save_success(entry: dict, key: str, role: str, summary: str, entities: list
 
 
 def _read_source(path: Path) -> str:
-    # 和 P0 extract_imports 同一套读法（utf-8-sig），两个阶段看到的文件内容才一致
+    # 和 extract_imports 同一套读法（utf-8-sig），两处看到的文件内容才一致
     return path.read_text(encoding="utf-8-sig")
 
 

@@ -1,6 +1,6 @@
 """命令行入口：python -m analyzer.cli <本地路径或git地址> [--json]。
 
-analyze() 是给 P1/P2 复用的总入口；main() 只包一层参数解析和输出格式选择。
+analyze() 是给 AI 摘要与 Web 层复用的总入口；main() 只包一层参数解析和输出格式选择。
 """
 
 import argparse
@@ -65,7 +65,7 @@ def render_text(analysis: dict) -> str:
         _summary_line(analysis),
         f"跳过: {len(analysis['skipped'])} 个",
     ]
-    # 只有 --with-ai 的结果里才有 ai_stats；不加开关时输出和 P0 一字不差
+    # 只有 --with-ai 的结果里才有 ai_stats；不加开关时输出和纯静态解析一字不差
     if "ai_stats" in analysis:
         lines.append(_ai_stats_line(analysis["ai_stats"]))
     lines += [
@@ -172,7 +172,7 @@ def main(argv: list[str] | None = None) -> int:
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
     parser = argparse.ArgumentParser(
         prog="python -m analyzer.cli",
-        description="解析一个 Python 仓库的文件结构与 import 依赖（P0）",
+        description="解析一个 Python 仓库的文件结构与 import 依赖",
     )
     parser.add_argument("repo", help="本地仓库路径，或 http(s)/git@ 开头的 git 地址")
     parser.add_argument("--json", action="store_true", help="输出契约 JSON 而不是渲染文本")

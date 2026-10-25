@@ -1,7 +1,7 @@
 import { onUnmounted, ref } from 'vue'
 import { request } from '../api/client'
 
-// 封装"提交 + 轮询"。P2 用轮询；P3 换 SSE 时只改这一个文件，页面不用动。
+// 封装"提交 + 轮询"。当前用轮询；换 SSE 时只改这一个文件，页面不用动。
 export function useAnalysis() {
   const task = ref(null)
   const loading = ref(false)

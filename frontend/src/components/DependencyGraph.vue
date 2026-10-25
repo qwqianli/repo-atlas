@@ -24,11 +24,16 @@ onMounted(() => {
     container: container.value,   // 传 DOM 元素，不是选择器字符串
     autoFit: 'view',
     data: buildData(),
-    layout: { type: 'dagre', rankdir: 'LR' },
+    // nodesep/ranksep 拉开间距：不设的话几十个节点会挤成一条窄带，标签互相压住
+    layout: { type: 'dagre', rankdir: 'LR', nodesep: 12, ranksep: 90 },
     node: {
       style: {
         size: 26,
-        labelText: (d) => d.id,
+        // 标签超长截断：完整路径右侧面板里有，图上只要能认出文件即可
+        labelText: (d) => {
+          const name = d.id
+          return name.length > 20 ? name.slice(0, 19) + '…' : name
+        },
         labelPlacement: 'right',
         labelFontSize: 10,
       },

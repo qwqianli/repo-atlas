@@ -29,8 +29,8 @@ def clone_or_locate(repo: str, dest_root: Path = CLONE_DIR) -> Path:
     if not local.exists():
         raise ValueError(f"路径不存在: {repo}")
     if not local.is_dir():
-        # P0 分析的对象是"整个仓库"，传单个文件没有依赖图可画
-        raise ValueError(f"不是目录，P0 只能分析整个仓库: {repo}")
+        # 分析的对象是"整个仓库"，传单个文件没有依赖图可画
+        raise ValueError(f"不是目录，只能分析整个仓库: {repo}")
     # resolve() 把 .. 和符号链接理顺，后面 relative_to 才不会算错
     return local.resolve()
 

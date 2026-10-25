@@ -1,6 +1,6 @@
 """提示词：让模型只产出 role / summary / key_entities 三个字段的 JSON。
 
-分工原则：结构信息（依赖关系）由 P0 的静态分析确定后作为上下文喂进去，
+分工原则：结构信息（依赖关系）由静态分析确定后作为上下文喂进去，
 模型只负责语义理解——AI 不推测结构，算法不编语义。
 """
 
@@ -29,7 +29,7 @@ def truncate_source(code: str, limit: int) -> str:
     try:
         tree = ast.parse(code)
     except SyntaxError:
-        # 能走到这里的文件 P0 都解析成功过；这行只是兜底，保证任何输入都不炸
+        # 能走到这里的文件都解析成功过；这行只是兜底，保证任何输入都不炸
         return code[:limit] + "\n# ... 已截断 ..."
     keep: set[int] = set()   # 要保留的行号（按 0 数）
     for node in tree.body:

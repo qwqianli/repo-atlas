@@ -15,6 +15,17 @@ const roleOf = computed(() => {
   }
   return map
 })
+
+// 环成员集合：编号列表里全量保留，只加标记，不在下方重复列一遍文件名
+const cyclePaths = computed(() => {
+  const set = new Set()
+  for (const group of props.readingPath.cycles || []) {
+    for (const p of group) set.add(p)
+  }
+  return set
+})
+
+const cycleFileCount = computed(() => cyclePaths.value.size)
 </script>
 
 <template>
@@ -25,6 +36,7 @@ const roleOf = computed(() => {
       <li v-for="(path, i) in readingPath.order" :key="path" @click="emit('select', path)">
         <span class="rp-idx">{{ i + 1 }}</span>
         <span class="rp-path">{{ path }}</span>
+        <span v-if="cyclePaths.has(path)" class="rp-tag">循环依赖</span>
         <span v-if="roleOf[path]" class="rp-role">{{ roleOf[path] }}</span>
         <span v-else class="rp-role missing">（未生成说明）</span>
       </li>
@@ -32,15 +44,12 @@ const roleOf = computed(() => {
 
     <div v-if="readingPath.cycles && readingPath.cycles.length" class="cycles">
       <h4>循环依赖（无法确定先后）</h4>
-      <p class="hint">这些模块互相 import，没有严格先后；挑一个当入口读进去，再回来看另一个。</p>
-      <div v-for="group in readingPath.cycles" :key="group.join(' ⇄ ')" class="cycle-group">
-        <span
-          v-for="p in group"
-          :key="p"
-          class="chip clickable"
-          @click="emit('select', p)"
-        >{{ p }}</span>
-      </div>
+      <p class="hint">
+        检测到 {{ readingPath.cycles.length }} 组互相 import 的模块（共
+        {{ cycleFileCount }} 个文件），它们之间没有严格的先后顺序。
+        这些文件已在上方列表里连续排在一起并标了「循环依赖」：
+        挑其中一个当入口读进去，读完再回来看另一个。
+      </p>
     </div>
   </section>
 </template>

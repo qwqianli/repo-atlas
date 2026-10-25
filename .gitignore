@@ -1,5 +1,5 @@
 # ---- 分析产物 ----
-# P1 起会把别人的仓库 clone 到 backend/data/clones/，SQLite 文件也在 backend/data/。
+# 分析别人的仓库时会把源码 clone 到 backend/data/clones/，SQLite 文件也在 backend/data/。
 # 这两类东西绝对不进版本库：体积大、且不属于本项目源码。
 backend/data/
 
@@ -36,3 +36,7 @@ dist/
 .DS_Store
 Thumbs.db
 *.log
+
+# 本地临时目录：不进版本库
+docs/dev/
+internal/

@@ -1,4 +1,4 @@
-# P1 唯一新增的第三方依赖：GLM 接口的 HTTP 客户端
+# AI 摘要唯一新增的第三方依赖：GLM 接口的 HTTP 客户端
 requests==2.34.2
-# P2：Web 后端
+# Web 后端
 flask==3.0.0
