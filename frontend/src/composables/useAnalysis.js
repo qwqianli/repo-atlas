@@ -68,5 +68,5 @@ export function useAnalysis() {
   // 组件卸载必须停轮询，否则路由切走了还在每秒打接口
   onUnmounted(stop)
 
-  return { task, loading, error, submit, poll, stop }
+  return { task, loading, error, submit, poll, refresh, stop }
 }
