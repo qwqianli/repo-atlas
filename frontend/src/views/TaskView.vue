@@ -13,7 +13,7 @@ const { task, error, poll, refresh } = useAnalysis()
 
 // 进度双通道：SSE 为主（数字逐格动），连不上/断流时 useTaskStream 自己调 onFallback
 // 退回 poll——复用同一个 useAnalysis 实例，任务状态始终只有一份
-const { progress: liveProgress, status: liveStatus, connected } = useTaskStream(props.id, {
+const { progress: liveProgress, status: liveStatus, connected, error: streamError } = useTaskStream(props.id, {
   onDone: () => refresh(props.id),      // done 事件不带结果本体，再拉一次任务
   onFallback: () => poll(props.id),
 })
@@ -47,7 +47,7 @@ function select(path) {
 
 <template>
   <div class="task">
-    <p v-if="error" class="error">{{ error }}</p>
+    <p v-if="error || streamError" class="error">{{ error || streamError }}</p>
 
     <p v-if="!task && !connected" class="hint">正在获取任务…</p>
     <template v-else>

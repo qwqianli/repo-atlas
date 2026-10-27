@@ -91,7 +91,7 @@ python -m pytest                                            # 全部测试（离
 python -m pytest --cov=analyzer --cov-report=term-missing    # 覆盖率
 ```
 
-当前状态：**65 个测试全绿，约 1 秒跑完；`analyzer/` 覆盖率 93%**。所有 AI 调用在测试里都被替换成假实现（见 `tests/conftest.py` 的 `fake_llm`），断网/坏 Key 下依然全绿。注意必须用 `python -m pytest`（会自动把 backend 加进模块搜索路径），裸 `pytest` 命令不行。
+当前状态：**89 个测试全绿，约 1 秒跑完；`analyzer/` 覆盖率 93%**。所有 AI 调用在测试里都被替换成假实现（见 `tests/conftest.py` 的 `fake_llm`），断网/坏 Key 下依然全绿。注意必须用 `python -m pytest`（会自动把 backend 加进模块搜索路径），裸 `pytest` 命令不行。
 
 ## 目录结构
 
