@@ -11,6 +11,13 @@ export function useTaskStream(taskId, { onDone, onFallback } = {}) {
   let watchdog = null
   let closed = false
 
+  // 首包 3 秒内一条事件都没有 = 链路有问题（典型：代理把 SSE 吞了）
+  const CONNECT_TIMEOUT_MS = 3000
+  // 运行中的静默阈值：必须 ≥ 2× 心跳（15s），取 3× 是为了容忍一条心跳丢失或代理攒包。
+  // 限流时实测出现过 49 秒没有进度、只有心跳的静默——心跳每次都续期，所以不会误降级；
+  // 而链路真死时最多等 45 秒就退回轮询，不会永久卡「分析中」。
+  const IDLE_TIMEOUT_MS = 45000
+
   function close() {
     closed = true
     connected.value = false
@@ -32,11 +39,21 @@ export function useTaskStream(taskId, { onDone, onFallback } = {}) {
     if (onFallback) onFallback()
   }
 
-  function handle(event) {
+  // 清掉旧计时并重挂。只在连接时挂一次是不够的：首包一到就把看门狗摘掉，
+  // 之后后端中途死掉、代理又不关连接时，就再没有任何计时器能发现「静默」。
+  function arm(ms) {
+    if (closed) return
     if (watchdog) {
       clearTimeout(watchdog)
       watchdog = null
     }
+    watchdog = setTimeout(() => fallback('SSE 连接异常，已退回轮询'), ms)
+  }
+
+  function handle(event) {
+    // 续期放在所有分支之前：heartbeat 不携带进度、不命中下面任何分支，
+    // 但它必须把看门狗往后推，否则「链路活着但没进度」和「链路已死」就分不开。
+    arm(IDLE_TIMEOUT_MS)
     if (event.type === 'snapshot') {
       status.value = event.status
       progress.value = event.progress || { done: 0, total: 0 }
@@ -54,8 +71,7 @@ export function useTaskStream(taskId, { onDone, onFallback } = {}) {
   }
 
   es = new EventSource(`/api/tasks/${taskId}/stream`)
-  // 3 秒内一条事件都没收到 = 链路有问题（典型：代理把 SSE 吞了），退回轮询
-  watchdog = setTimeout(() => fallback('SSE 连接异常，已退回轮询'), 3000)
+  arm(CONNECT_TIMEOUT_MS)
   es.onmessage = (e) => {
     connected.value = true
     handle(JSON.parse(e.data))

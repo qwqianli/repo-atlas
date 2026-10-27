@@ -64,9 +64,10 @@ def stream_task(task_id: str):
                     # 必须带超时：任务异常结束后没有新事件，无超时阻塞会让生成器永久挂住
                     event = q.get(timeout=1)
                 except queue.Empty:
-                    # 超过 15 秒没事件就发心跳注释行：浏览器忽略它，但代理不会掐断空闲连接
+                    # 超过 15 秒没事件就发一条 heartbeat 真事件：注释行不触发前端 onmessage，
+                    # 前端看门狗靠它续期；浏览器忽略内容，但代理不会掐断空闲连接
                     if time.monotonic() - last_emit >= 15:
-                        yield ": keepalive\n\n"
+                        yield _format_event({"type": "heartbeat"})
                         last_emit = time.monotonic()
                     continue
                 yield _format_event(event)

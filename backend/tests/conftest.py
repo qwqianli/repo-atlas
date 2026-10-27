@@ -60,3 +60,33 @@ def fake_llm(monkeypatch):
     fake = FakeLLM()
     monkeypatch.setattr(llm_client, "chat", fake)
     return fake
+
+
+@pytest.fixture
+def isolated_store(monkeypatch):
+    """每次给一条 Web 层用例一张自己的任务表：不共用 task_service 的模块级单例。
+
+    routes.py 用的是 import 时绑定的那个名字，所以必须 patch routes.store 本身；
+    只 patch task_service.store 不起作用（那个名字已经不被路由层读了）。
+    """
+    from api import routes
+    from services.task_service import TaskStore
+
+    store = TaskStore()
+    monkeypatch.setattr(routes, "store", store)
+    return store
+
+
+@pytest.fixture
+def web_client(isolated_store, monkeypatch, tmp_path):
+    """Web 层测试客户端：私有任务表 + 缓存库指到 tmp_path + 假 Key。
+
+    三条隔离一起做：不共用全局 store、不写 backend/data/atlas.db、不读真 Key。
+    """
+    import config
+
+    from app import create_app
+
+    monkeypatch.setattr(config, "DB_PATH", tmp_path / "p5.db")
+    monkeypatch.setattr(config, "GLM_API_KEY", "test-key")
+    return create_app().test_client()
